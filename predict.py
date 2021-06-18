@@ -10,8 +10,8 @@ train_Y_file_path = "./train_Y_lg_v2.csv"
 validation_split = 0.2
 numClasses = 4
 tolerance = 0.000001
-maxEpochs = 100000
-learningRates = [0.01, 0.007]
+maxEpochs = 50000
+learningRate = 5
 
 """
 Predicts the target values for data in the file at 'test_X_file_path', using the weights learned during training.
@@ -91,31 +91,22 @@ def trainValSplit(X,Y):
 
 def builModel(X, Y):
     train_X, train_Y, val_X, val_Y = trainValSplit(X,Y)
-    minCost = np.inf 
-    minW = 0
-    minB = 0
-    for learningRate in learningRates:
-        W = np.random.normal(0, 1, (X.shape[1], 1))
-        b = np.random.rand() 
-        numEpochs = 0
-        prevCost = 0
-        # print(f"lr : {learningRate}, regParam : {regParam}, lrDecay : {lrDecay}")
-        while numEpochs < maxEpochs:
-            dW, dB = getGrads(train_X, train_Y, W, b) 
-            W = W - learningRate*(dW) 
-            b = b - learningRate*(dB)  
-            curCost = computeCost(val_X, val_Y, W, b) 
-            acc = getAccuracy(val_X, val_Y, W, b)
-            f1 = getF1score(val_X, val_Y, W, b)
-            # print(f"\tEpoch : {numEpochs}, Weighted F1 score : {f1}")
-            if curCost < minCost:
-                minCost = curCost 
-                minW, minB = W, b
-            if abs(curCost - prevCost) < tolerance:
-                break
-            numEpochs += 1
-            prevCost = curCost
-    return (minW, minB)
+    W = np.random.normal(0, 1, (X.shape[1], 1))
+    b = np.random.rand() 
+    numEpochs = 0
+    prevCost = 0
+    while numEpochs < maxEpochs:
+        dW, dB = getGrads(train_X, train_Y, W, b) 
+        W = W - learningRate*(dW) 
+        b = b - learningRate*(dB)  
+        curCost = computeCost(val_X, val_Y, W, b) 
+        acc = getAccuracy(val_X, val_Y, W, b)
+        f1 = getF1score(val_X, val_Y, W, b)
+        if abs(curCost - prevCost) < tolerance:
+            break
+        numEpochs += 1
+        prevCost = curCost
+    return (W, b)
 
 def predict(test_X_file_path):
     train_X = np.genfromtxt(train_X_file_path, delimiter=",", dtype=np.float128, skip_header=1)
@@ -151,4 +142,4 @@ if __name__ == "__main__":
     test_X_file_path = sys.argv[1]
     predict(test_X_file_path)
     # Uncomment to test on the training data
-    validate(test_X_file_path, actual_test_Y_file_path="train_Y_lg_v2.csv") 
+    # validate(test_X_file_path, actual_test_Y_file_path="train_Y_lg_v2.csv") 
